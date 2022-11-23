@@ -20,10 +20,8 @@ SuccessUserHandler implements AuthenticationSuccessHandler {
         System.out.println(authentication.getAuthorities());
         if (roles.contains("ROLE_ADMIN")) {
             httpServletResponse.sendRedirect("/admin");
-        } else if (roles.contains("ROLE_USER")) {
-            httpServletResponse.sendRedirect("/user");
         } else {
-            httpServletResponse.sendRedirect("/");
+            httpServletResponse.sendRedirect("/user");
         }
     }
 }
