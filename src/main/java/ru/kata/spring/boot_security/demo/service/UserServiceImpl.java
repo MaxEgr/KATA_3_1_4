@@ -2,92 +2,71 @@ package ru.kata.spring.boot_security.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kata.spring.boot_security.demo.model.Role;
+import ru.kata.spring.boot_security.demo.configs.MyPasswordEncoder;
 import ru.kata.spring.boot_security.demo.model.User;
-import ru.kata.spring.boot_security.demo.repository.RoleRepository;
 import ru.kata.spring.boot_security.demo.repository.UserRepository;
 
 import java.util.List;
 
-@Service
-public class UserServiceImpl implements UserService {
+@Repository
+public class UserServiceImpl implements UserService, UserDetailsService {
 
+    private final UserRepository userRepository;
+    private final MyPasswordEncoder myPasswordEncoder;
 
-    private UserRepository userRepo;
-    private RoleRepository roleRepo;
-    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepo, RoleRepository roleRepo, PasswordEncoder passwordEncoder) {
-        this.userRepo = userRepo;
-        this.roleRepo = roleRepo;
-        this.passwordEncoder = passwordEncoder;
+    public UserServiceImpl(UserRepository userRepository, MyPasswordEncoder myPasswordEncoder) {
+        this.userRepository = userRepository;
+        this.myPasswordEncoder = myPasswordEncoder;
+
     }
 
-    public UserServiceImpl() {
-    }
-
-    @Override
     @Transactional
-    public void saveUser(User user) {
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepo.save(user);
-    }
-
-    @Override
-    public void deleteUser(Long id) {
-        userRepo.deleteById(id);
-    }
-
-    @Override
-    public User getUser(Long id) {
-        return userRepo.getById(id);
-    }
-
-    @Override
-    public List<User> getAllUsers() {
-        return userRepo.findAll();
-    }
-
-    @Override
-    public User findUserByEmail(String email) {
-        return userRepo.findUserByEmail(email);
-    }
-
-
-    @Override
-    public List<Role> getAllRoles() {
-        return roleRepo.findAll();
-    }
-
-    @Override
-    @Transactional
-    public void editUser(User user) {
-
-        if (user.getPassword().equals(userRepo.findUserByEmail(user.getEmail()).getPassword())) {
-            userRepo.save(user);
-        } else if (user.getPassword().equals("") & user.getRoles() != null) {
-            user.setPassword(userRepo.findUserByEmail(user.getEmail()).getPassword());
-            userRepo.save(user);
-        } else if (user.getRoles() == null) {
-            user.setRoles(findUserByEmail(user.getEmail()).getRoles());
-            saveUser(user);
-        } else if (user.getPassword().equals("") && user.getRoles() == null) {
-            user.setPassword(userRepo.findUserByEmail(user.getEmail()).getPassword());
-            user.setRoles(findUserByEmail(user.getEmail()).getRoles());
-            userRepo.save(user);
-        } else {
-            saveUser(user);
+    public User addUser(User user) {
+        User findUser = userRepository.findByUsername(user.getUsername());
+        if (findUser != null) {
+            return findUser;
         }
+        user.setPassword(myPasswordEncoder.getPasswordEncoder().encode(user.getPassword()));
+        userRepository.save(user);
+        return user;
+    }
+
+    public User getUser(long id) {
+        return userRepository.findById(id).get();
+    }
+
+    @SuppressWarnings("unchecked")
+    public User getUserByName(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    @Transactional
+    public void deleteUser(long id) {
+        userRepository.deleteById(id);
+    }
+
+    @Transactional
+    public User editUser(User user) {
+        if (userRepository.findById(user.getId()) != null) {
+            user.setPassword(myPasswordEncoder.getPasswordEncoder().encode(user.getPassword()));
+            return userRepository.save(user);
+        }
+        return user;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
     @Override
-    public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
-        return userRepo.findUserByEmail(userName);
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username);
     }
 }
