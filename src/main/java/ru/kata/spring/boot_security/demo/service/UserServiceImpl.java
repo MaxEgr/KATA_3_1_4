@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final MyPasswordEncoder myPasswordEncoder;
 
 
-    @Autowired
+
     public UserServiceImpl(UserRepository userRepository, MyPasswordEncoder myPasswordEncoder) {
         this.userRepository = userRepository;
         this.myPasswordEncoder = myPasswordEncoder;
