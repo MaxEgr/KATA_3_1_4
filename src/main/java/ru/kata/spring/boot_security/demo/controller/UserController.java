@@ -11,16 +11,16 @@ import java.security.Principal;
 @Controller
 public class UserController {
 
-    private final UserService userDao;
+    private final UserService userService;
 
     @Autowired
-    public UserController(UserService userDao) {
-        this.userDao = userDao;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping("/user")
     public String getUser(Principal principal, ModelMap model) {
-        model.addAttribute("user", userDao.getUserByName(principal.getName()));
-        return "usr";
+        model.addAttribute("user", userService.getUserByName(principal.getName()));
+        return "user";
     }
 }

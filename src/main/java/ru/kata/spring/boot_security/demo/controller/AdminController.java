@@ -12,40 +12,40 @@ import java.security.Principal;
 
 @Controller
 public class AdminController {
-    private final UserService userDao;
+    private final UserService userService;
     private final RoleService roleService;
 
 
     @Autowired
-    public AdminController(UserService userDao, RoleService roleService) {
-        this.userDao = userDao;
+    public AdminController(UserService userService, RoleService roleService) {
+        this.userService = userService;
         this.roleService = roleService;
 
     }
 
     @GetMapping("/admin")
     public String getUsers(Principal principal, Model model) {
-        model.addAttribute(this.userDao.getUserByName(principal.getName()));
-        model.addAttribute("usersList", this.userDao.getAllUsers());
+        model.addAttribute(this.userService.getUserByName(principal.getName()));
+        model.addAttribute("usersList", this.userService.getAllUsers());
         model.addAttribute("roleList", this.roleService.getAllRoles());
-        return "adm";
+        return "admin";
     }
 
     @PostMapping("/admin/new")
     public String createUser(@ModelAttribute("user") User user) {
-        this.userDao.addUser(user);
+        this.userService.addUser(user);
         return "redirect:/admin";
     }
 
     @PutMapping("/admin/update")
     public String updateUser(@ModelAttribute("user") User user) {
-        this.userDao.editUser(user);
+        this.userService.editUser(user);
         return "redirect:/admin";
     }
 
     @DeleteMapping("/admin/delete/{id}")
     public String deleteUser(@PathVariable("id") long id) {
-        this.userDao.deleteUser(id);
+        this.userService.deleteUser(id);
         return "redirect:/admin";
     }
 }
