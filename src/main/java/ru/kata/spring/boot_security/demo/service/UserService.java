@@ -6,7 +6,7 @@ import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 
 import java.util.List;
-@Repository
+
 public interface UserService extends UserDetailsService {
     User addUser(User user);
 
